@@ -1,14 +1,41 @@
-import { app, shell, BrowserWindow, ipcMain } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
+import { app, shell, BrowserWindow, ipcMain, screen } from 'electron'
+
+app.disableHardwareAcceleration()
+app.commandLine.appendSwitch('disable-gpu')
+app.commandLine.appendSwitch('disable-software-rasterizer')
+
+app.commandLine.appendSwitch('enable-wayland-ime')
+app.commandLine.appendSwitch('ozone-platform-hint', 'auto')
 
 function createWindow(): void {
-  // Create the browser window.
+  const primaryDisplay = screen.getPrimaryDisplay()
+  const { width, height } = primaryDisplay.workAreaSize
+
+  const widgetWidth = 500
+  const widgetHeight = 800
+
+  const x = Math.round((width * 0.75) - (widgetWidth / 2))
+
+  const y = Math.round((height - widgetHeight) / 2)
+
   const mainWindow = new BrowserWindow({
-    width: 900,
-    height: 670,
+    width: 500,
+    height: 800,
+    x: x,
+    y: y,
     show: false,
+
+    frame: true,        // 枠あり
+    transparent: false, // 透明化なし（ここが一番怪しい）
+    resizable: true,
+    alwaysOnTop: false,
+    skipTaskbar: true,
+
+    type: 'desktop',
+
     autoHideMenuBar: true,
     ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {
@@ -42,33 +69,21 @@ app.whenReady().then(() => {
   // Set app user model id for windows
   electronApp.setAppUserModelId('com.electron')
 
-  // Default open or close DevTools by F12 in development
-  // and ignore CommandOrControl + R in production.
-  // see https://github.com/alex8088/electron-toolkit/tree/master/packages/utils
   app.on('browser-window-created', (_, window) => {
     optimizer.watchWindowShortcuts(window)
   })
 
-  // IPC test
   ipcMain.on('ping', () => console.log('pong'))
 
   createWindow()
 
   app.on('activate', function () {
-    // On macOS it's common to re-create a window in the app when the
-    // dock icon is clicked and there are no other windows open.
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
   })
 })
 
-// Quit when all windows are closed, except on macOS. There, it's common
-// for applications and their menu bar to stay active until the user quits
-// explicitly with Cmd + Q.
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit()
   }
 })
-
-// In this file you can include the rest of your app's specific main process
-// code. You can also put them in separate files and require them here.
