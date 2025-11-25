@@ -1,7 +1,7 @@
-import { app, shell, BrowserWindow, ipcMain } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
+import { app, shell, BrowserWindow, ipcMain, screen } from 'electron'
 
 app.disableHardwareAcceleration()
 app.commandLine.appendSwitch('disable-gpu')
@@ -11,15 +11,30 @@ app.commandLine.appendSwitch('enable-wayland-ime')
 app.commandLine.appendSwitch('ozone-platform-hint', 'auto')
 
 function createWindow(): void {
-const mainWindow = new BrowserWindow({
-    width: 320,
-    height: 500,
+  const primaryDisplay = screen.getPrimaryDisplay()
+  const { width, height } = primaryDisplay.workAreaSize
+
+  const widgetWidth = 500
+  const widgetHeight = 800
+
+  const x = Math.round((width * 0.75) - (widgetWidth / 2))
+
+  const y = Math.round((height - widgetHeight) / 2)
+
+  const mainWindow = new BrowserWindow({
+    width: 500,
+    height: 800,
+    x: x,
+    y: y,
     show: false,
 
     frame: true,        // 枠あり
     transparent: false, // 透明化なし（ここが一番怪しい）
     resizable: true,
     alwaysOnTop: false,
+    skipTaskbar: true,
+
+    type: 'desktop',
 
     autoHideMenuBar: true,
     ...(process.platform === 'linux' ? { icon } : {}),
