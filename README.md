@@ -28,6 +28,11 @@ Linuxデスクトップ（Ubuntu等）の背景に常駐させて使用する、
 - **Styling:** CSS (Atomic Design components)
 - **State Management:** React Hooks + Local Storage
 
+### 改善点
+- 日本語対応(Electron使用上の)
+- 軽量化
+- 普通に機能の強化
+
 ## Installation & Dev (開発環境の起動)
 
 ```bash
